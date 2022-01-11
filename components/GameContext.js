@@ -3,8 +3,6 @@ import React, { useEffect, useState } from "react";
 import { getTodaysWord } from "../lib/utils";
 
 const game = {
-  solution: "",
-  setSolution: () => {},
   attempts: [],
   setAttempts: () => {},
   matrix: [],
@@ -42,7 +40,6 @@ export function getEndTimeForDate(date) {
 }
 
 export const GameContextProvider = (props) => {
-  const [solution, setSolution] = useState(null);
   const [attempts, setAttempts] = useState([]);
   const [matrix, setMatrix] = useState([]);
   const [tried, setTried] = useState([]);
@@ -51,10 +48,10 @@ export const GameContextProvider = (props) => {
   const [gameStatus, setGameStatus] = useState("PLAYING");
   const [colorBlind, setColorBlind] = useState(false);
 
-  const processWord_ = (word, solution_) => {
+  const processWord_ = (word) => {
     // Internal logic to parse the word and determine if it is correct or not
 
-    let solution2 = solution || solution_;
+    let solution2 = getTodaysWord(props.word);
     let newMatrixRow = ["x", "x", "x", "x", "x"];
     let newTried = [];
     let newPresent = [];
@@ -93,10 +90,10 @@ export const GameContextProvider = (props) => {
   };
 
   const processWord = (word) => {
+    const solution = getTodaysWord(props.word);
     if (game.gameStatus != "WIN" && game.gameStatus != "LOSE") {
       const { newMatrixRow, newTried, newPresent, newCorrect } =
         processWord_(word);
-
       const newAttempts = [...attempts, word];
 
       setAttempts(newAttempts);
@@ -140,8 +137,7 @@ export const GameContextProvider = (props) => {
     let today = DateTime.local({ zone: "America/New_York" });
     let nextGameStartsAt = getEndTimeForDate(today);
 
-    const solution_ = getTodaysWord(today);
-    setSolution(solution_);
+    const solution_ = getTodaysWord(props.word);
 
     // Load gameState
     const gameState = localStorage.getItem("gameState");
@@ -168,7 +164,7 @@ export const GameContextProvider = (props) => {
         for (let i = 0; i < state.board.length; i++) {
           const word = state.board[i];
           const { newMatrixRow, newTried, newPresent, newCorrect } =
-            processWord_(word, solution_);
+            processWord_(word);
 
           matrix_ = [...matrix_, newMatrixRow];
           tried_ = [...tried_, ...newTried];
@@ -200,8 +196,6 @@ export const GameContextProvider = (props) => {
   });
 
   const values = {
-    solution,
-    setSolution,
     attempts,
     setAttempts,
     matrix,
